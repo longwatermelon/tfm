@@ -113,10 +113,34 @@ void prog_render_cwd(struct Prog* self)
         struct stat sb;
         stat(self->items[i], &sb);
 
-        if (S_ISDIR(sb.st_mode))
-            mvprintw(3 + i, 2, "[Directory]  %s", self->items[i]);
+        char* name = fs_name(self->items[i]);
+
+        {
+            char* cwd_parent = fs_parent(self->cwd);
+
+            if (cwd_parent && strcmp(cwd_parent, self->items[i]) == 0)
+            {
+                free(name);
+                name = malloc(sizeof(char) * 3);
+                sprintf(name, "..");
+
+                free(cwd_parent);
+            }
+        }
+
+        if (name)
+        {
+            if (S_ISDIR(sb.st_mode))
+                mvprintw(3 + i, 2, "[Directory]  %s", name);
+            else
+                mvprintw(3 + i, 2, "[File]       %s", name);
+
+            free(name);
+        }
         else
-            mvprintw(3 + i, 2, "[File]       %s", self->items[i]);
+        {
+            mvprintw(3 + i, 2, "<Error>");
+        }
     }
 }
 

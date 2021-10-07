@@ -30,12 +30,45 @@ char** fs_list_directory(const char* path, int* nitems, unsigned char type, int 
             continue;
 
         items = realloc(items, sizeof(char*) * ++*nitems);
-        items[*nitems - 1] = malloc(sizeof(char) * (strlen(de->d_name) + 1));
-        memcpy(items[*nitems - 1], de->d_name, strlen(de->d_name) + 1);
+
+        char* full_path = realpath(de->d_name, 0);
+        items[*nitems - 1] = full_path;
     }
 
     closedir(dir);
 
     return items;
+}
+
+
+char* fs_name(const char* path)
+{
+    for (int i = strlen(path) - 1; i >= 0; --i)
+    {
+        if (path[i] == '/')
+        {
+            char* name = malloc(sizeof(char) * (strlen(path) - i + 1));
+            snprintf(name, strlen(path) - i + 1, "%s", &path[i + 1]);
+            return name;
+        }
+    }
+
+    return 0;
+}
+
+
+char* fs_parent(const char* path)
+{
+    for (int i = strlen(path) - 1; i >= 0; --i)
+    {
+        if (path[i] == '/')
+        {
+            char* parent = malloc(sizeof(char) * (i + 1));
+            snprintf(parent, i + 1, "%s", path);
+            return parent;
+        }
+    }
+
+    return 0;
 }
 
