@@ -7,11 +7,12 @@
 #include <sys/stat.h>
 #include <ncurses.h>
 
-
 struct Prog* prog_alloc(const char* cwd)
 {
     struct Prog* self = malloc(sizeof(struct Prog));
     self->running = true;
+
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &self->winsize);
 
     prog_change_dir(self, cwd);
     self->selected = 0;
@@ -39,7 +40,23 @@ void prog_mainloop(struct Prog* self)
 
         mvprintw(0, 2, "Current dir: %s", self->cwd);
         mvprintw(1, 2, "Press 'q' to exit");
-        prog_render_cwd(self);
+        prog_render_cwd(self, 2, 3);
+
+        struct stat sb;
+        stat(self->items[self->selected], &sb);
+
+        if (S_ISDIR(sb.st_mode))
+        {
+            char prev[PATH_MAX];
+            memcpy(prev, self->cwd, strlen(self->cwd) + 1);
+
+            prog_change_dir(self, self->items[self->selected]);
+
+            mvprintw(0, self->winsize.ws_col / 2, "Preview of %s", self->cwd);
+            prog_render_cwd(self, self->winsize.ws_col / 2, 3);
+
+            prog_change_dir(self, prev);
+        }
 
         refresh();
         usleep(1000);
@@ -69,7 +86,10 @@ void prog_handle_events(struct Prog* self, int key)
     }
 
     if (key == 's')
+    {
         prog_change_dir(self, self->items[self->selected]);
+        self->selected = 0;
+    }
 }
 
 
@@ -90,7 +110,7 @@ void prog_change_dir(struct Prog* self, const char* path)
     utils_sort_alphabetically(self->items, self->nitems);
 
     int nfiles;
-    char** files = fs_list_directory(self->cwd, &nfiles, DT_DIR, FS_EXCLUDE);
+    char** files = fs_list_directory(self->cwd, &nfiles, DT_REG, FS_INCLUDE);
     utils_sort_alphabetically(files, nfiles);
 
     self->items = realloc(self->items, sizeof(char*) * (self->nitems + nfiles));
@@ -98,15 +118,19 @@ void prog_change_dir(struct Prog* self, const char* path)
     self->nitems += nfiles;
 
     free(files);
-
-    self->selected = 0;
 }
 
 
-void prog_render_cwd(struct Prog* self)
+void prog_render_cwd(struct Prog* self, int x, int y)
 {
     for (int i = 0; i < self->nitems; ++i)
     {
+        if (!self->items[i])
+        {
+            mvprintw(y + i, x, "<Error>");
+            continue;
+        }
+
         if (self->selected == i)
             mvaddch(3 + i, 0, '>');
 
@@ -114,6 +138,9 @@ void prog_render_cwd(struct Prog* self)
         stat(self->items[i], &sb);
 
         char* name = fs_name(self->items[i]);
+
+        // Check if directory is parent directory
+        // If it is, replace with '..' to reduce confusion
         char* cwd_parent = fs_parent(self->cwd);
 
         if (cwd_parent)
@@ -131,15 +158,15 @@ void prog_render_cwd(struct Prog* self)
         if (name)
         {
             if (S_ISDIR(sb.st_mode))
-                mvprintw(3 + i, 2, "[Directory]  %s", name);
+                mvprintw(y + i, x, "[Directory]  %s", name);
             else
-                mvprintw(3 + i, 2, "[File]       %s", name);
+                mvprintw(y + i, x, "[File]       %s", name);
 
             free(name);
         }
         else
         {
-            mvprintw(3 + i, 2, "<Error>");
+            mvprintw(y + i, x, "<Error>");
         }
     }
 }

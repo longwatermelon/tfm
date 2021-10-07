@@ -31,8 +31,14 @@ void utils_sort_alphabetically(char** arr, int len)
 {
     for (int i = 0; i < len; ++i)
     {
+        if (!arr[i])
+            continue;
+
         for (int j = i + 1; j < len; ++j)
         {
+            if (!arr[j])
+                continue;
+
             if (strcmp(arr[i], arr[j]) > 0)
             {
                 char* tmp = arr[i];
