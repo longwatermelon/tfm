@@ -114,21 +114,18 @@ void prog_render_cwd(struct Prog* self)
         stat(self->items[i], &sb);
 
         char* name = fs_name(self->items[i]);
+        char* cwd_parent = fs_parent(self->cwd);
 
+        if (cwd_parent)
         {
-            char* cwd_parent = fs_parent(self->cwd);
-
-            if (cwd_parent)
+            if (strcmp(cwd_parent, self->items[i]) == 0)
             {
-                if (strcmp(cwd_parent, self->items[i]) == 0)
-                {
-                    free(name);
-                    name = malloc(sizeof(char) * 3);
-                    sprintf(name, "..");
-                }
-
-                free(cwd_parent);
+                free(name);
+                name = malloc(sizeof(char) * 3);
+                sprintf(name, "..");
             }
+
+            free(cwd_parent);
         }
 
         if (name)
