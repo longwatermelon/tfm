@@ -54,7 +54,8 @@ void prog_mainloop(struct Prog* self)
                 self->selected = self->nitems - 1;
         }
 
-        mvprintw(20, 2, "%s", self->cwd);
+        mvprintw(0, 2, "Current dir: %s", self->cwd);
+        mvprintw(1, 2, "Press 'q' to exit");
         prog_render_cwd(self);
 
         refresh();
@@ -80,9 +81,9 @@ void prog_render_cwd(struct Prog* self)
     for (int i = 0; i < self->nitems; ++i)
     {
         if (self->selected == i)
-            mvaddch(1 + i, 0, '>');
+            mvaddch(3 + i, 0, '>');
 
-        mvprintw(1 + i, 2, "%s", self->items[i]);
+        mvprintw(3 + i, 2, "%s", self->items[i]);
     }
 }
 

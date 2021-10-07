@@ -11,6 +11,7 @@ int main()
     initscr();
     nodelay(stdscr, TRUE);
     keypad(stdscr, TRUE);
+    raw();
     curs_set(0);
 
     struct Prog* p = prog_alloc(".");
