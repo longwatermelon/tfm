@@ -87,8 +87,14 @@ void prog_handle_events(struct Prog* self, int key)
 
     if (key == 's')
     {
-        prog_change_dir(self, self->items[self->selected]);
-        self->selected = 0;
+        struct stat sb;
+        stat(self->items[self->selected], &sb);
+
+        if (S_ISDIR(sb.st_mode))
+        {
+            prog_change_dir(self, self->items[self->selected]);
+            self->selected = 0;
+        }
     }
 }
 
