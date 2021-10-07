@@ -24,14 +24,14 @@ void prog_free(struct Prog* self)
 
 void prog_mainloop(struct Prog* self)
 {
-    /* while (self->running) */
-    /* { */
-    /*     mvprintw(10, 10, "leleleell cwd %s", self->cwd); */
-    /*     refresh(); */
-    /* } */
+    while (self->running)
+    {
+        int key = getch();
+        erase();
 
-    mvprintw(10, 10, "owo");
-    refresh();
-    getch();
+        mvprintw(10, 10, "owo");
+
+        refresh();
+    }
 }
 
