@@ -9,6 +9,8 @@ add_executable(tfm
     src/prog.c
     src/fs.h
     src/fs.c
+    src/utils.h
+    src/utils.c
 )
 
 target_compile_options(tfm PRIVATE -ggdb)

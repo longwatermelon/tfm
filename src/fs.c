@@ -1,4 +1,5 @@
 #include "fs.h"
+#include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,7 +13,7 @@ char** fs_list_directory(const char* path, int* nitems)
 
     if (!dir)
     {
-        fprintf(stderr, "Couldn't open directory %s\n", path);
+        utils_log("log", "Couldn't open dir %s\n", path);
         return 0;
     }
 
