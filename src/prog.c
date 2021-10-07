@@ -123,9 +123,10 @@ void prog_render_cwd(struct Prog* self)
                 free(name);
                 name = malloc(sizeof(char) * 3);
                 sprintf(name, "..");
-
-                free(cwd_parent);
             }
+
+            if (cwd_parent)
+                free(cwd_parent);
         }
 
         if (name)
