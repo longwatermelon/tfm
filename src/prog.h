@@ -9,6 +9,9 @@ struct Prog
     bool running;
 
     char cwd[PATH_MAX];
+    
+    char** items;
+    int nitems;
 };
 
 struct Prog* prog_alloc(const char* cwd);
@@ -16,6 +19,7 @@ void prog_free(struct Prog* self);
 
 void prog_mainloop(struct Prog* self);
 
+void prog_change_dir(struct Prog* self, const char* path);
 void prog_render_cwd(struct Prog* self);
 
 #endif
