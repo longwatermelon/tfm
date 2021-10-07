@@ -16,6 +16,8 @@ struct Prog
     int nitems;
 
     int selected;
+    
+    int dir_render_offset;
 };
 
 struct Prog* prog_alloc(const char* cwd);

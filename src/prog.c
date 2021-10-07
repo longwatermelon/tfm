@@ -7,6 +7,8 @@
 #include <sys/stat.h>
 #include <ncurses.h>
 
+#define DIR_RENDER_Y 3
+
 struct Prog* prog_alloc(const char* cwd)
 {
     struct Prog* self = malloc(sizeof(struct Prog));
@@ -14,8 +16,13 @@ struct Prog* prog_alloc(const char* cwd)
 
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &self->winsize);
 
+    self->items = 0;
+    self->nitems = 0;
+
     prog_change_dir(self, cwd);
     self->selected = 0;
+
+    self->dir_render_offset = 0;
 
     return self;
 }
@@ -38,9 +45,15 @@ void prog_mainloop(struct Prog* self)
 
         prog_handle_events(self, key);
 
+        if (self->selected + self->dir_render_offset >= self->winsize.ws_row - (self->winsize.ws_row / 10) && self->dir_render_offset - 1 >= -self->nitems)
+            --self->dir_render_offset;
+
+        if (self->selected + self->dir_render_offset <= 5 && self->dir_render_offset + 1 <= 0)
+            ++self->dir_render_offset;
+
         mvprintw(0, 2, "Current dir: %s", self->cwd);
         mvprintw(1, 2, "Press 'q' to exit");
-        prog_render_cwd(self, 2, 3);
+        prog_render_cwd(self, 2, DIR_RENDER_Y + self->dir_render_offset);
 
         struct stat sb;
         stat(self->items[self->selected], &sb);
@@ -53,7 +66,7 @@ void prog_mainloop(struct Prog* self)
             prog_change_dir(self, self->items[self->selected]);
 
             mvprintw(0, self->winsize.ws_col / 2, "Preview of %s", self->cwd);
-            prog_render_cwd(self, self->winsize.ws_col / 2, 3);
+            prog_render_cwd(self, self->winsize.ws_col / 2, DIR_RENDER_Y + self->dir_render_offset);
 
             prog_change_dir(self, prev);
         }
@@ -110,7 +123,8 @@ void prog_change_dir(struct Prog* self, const char* path)
     chdir(path);
     getcwd(self->cwd, sizeof(char) * PATH_MAX);
 
-    utils_free_array(self->items, self->nitems);
+    if (self->items)
+        utils_free_array(self->items, self->nitems);
 
     self->items = fs_list_directory(self->cwd, &self->nitems, DT_DIR, FS_INCLUDE);
     utils_sort_alphabetically(self->items, self->nitems);
@@ -138,7 +152,10 @@ void prog_render_cwd(struct Prog* self, int x, int y)
         }
 
         if (self->selected == i)
-            mvaddch(3 + i, 0, '>');
+            mvaddch(y + i, 0, '>');
+
+        if (y + i < DIR_RENDER_Y)
+            continue;
 
         struct stat sb;
         stat(self->items[i], &sb);
