@@ -24,7 +24,7 @@ char** fs_list_directory(const char* path, int* nitems)
 
     while ((de = readdir(dir)) != 0)
     {
-        if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
+        if (strcmp(de->d_name, ".") == 0)
             continue;
 
         items = realloc(items, sizeof(char*) * ++*nitems);

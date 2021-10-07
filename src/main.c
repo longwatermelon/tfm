@@ -9,14 +9,19 @@
 int main()
 {
     initscr();
+    noecho();
     nodelay(stdscr, TRUE);
     keypad(stdscr, TRUE);
     raw();
     curs_set(0);
 
-    struct Prog* p = prog_alloc(".");
+    char* full_path = realpath(".", 0);
+    struct Prog* p = prog_alloc(full_path);
+
     prog_mainloop(p);
+
     prog_free(p);
+    free(full_path);
 
     curs_set(1);
     endwin();
