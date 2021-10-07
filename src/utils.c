@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 
 
 void utils_log(const char* path, const char* fmt, ...)
@@ -23,5 +24,22 @@ void utils_free_array(char** arr, int len)
         free(arr[i]);
 
     free(arr);
+}
+
+
+void utils_sort_alphabetically(char** arr, int len)
+{
+    for (int i = 0; i < len; ++i)
+    {
+        for (int j = i + 1; j < len; ++j)
+        {
+            if (strcmp(arr[i], arr[j]) > 0)
+            {
+                char* tmp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = tmp;
+            }
+        }
+    }
 }
 

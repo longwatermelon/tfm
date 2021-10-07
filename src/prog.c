@@ -75,7 +75,6 @@ void prog_handle_events(struct Prog* self, int key)
 
 void prog_change_dir(struct Prog* self, const char* path)
 {
-    // Check if directory
     struct stat sb;
     stat(path, &sb);
 
@@ -87,7 +86,19 @@ void prog_change_dir(struct Prog* self, const char* path)
 
     utils_free_array(self->items, self->nitems);
 
-    self->items = fs_list_directory(self->cwd, &self->nitems);
+    self->items = fs_list_directory(self->cwd, &self->nitems, DT_DIR, FS_INCLUDE);
+    utils_sort_alphabetically(self->items, self->nitems);
+
+    int nfiles;
+    char** files = fs_list_directory(self->cwd, &nfiles, DT_DIR, FS_EXCLUDE);
+    utils_sort_alphabetically(files, nfiles);
+
+    self->items = realloc(self->items, sizeof(char*) * (self->nitems + nfiles));
+    memcpy(&self->items[self->nitems], files, sizeof(char*) * nfiles);
+    self->nitems += nfiles;
+
+    free(files);
+
     self->selected = 0;
 }
 
@@ -99,7 +110,13 @@ void prog_render_cwd(struct Prog* self)
         if (self->selected == i)
             mvaddch(3 + i, 0, '>');
 
-        mvprintw(3 + i, 2, "%s", self->items[i]);
+        struct stat sb;
+        stat(self->items[i], &sb);
+
+        if (S_ISDIR(sb.st_mode))
+            mvprintw(3 + i, 2, "[Directory]  %s", self->items[i]);
+        else
+            mvprintw(3 + i, 2, "[File]       %s", self->items[i]);
     }
 }
 
