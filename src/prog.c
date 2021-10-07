@@ -1,4 +1,5 @@
 #include "prog.h"
+#include "fs.h"
 #include <stdlib.h>
 #include <string.h>
 #include <ncurses.h>
@@ -29,9 +30,24 @@ void prog_mainloop(struct Prog* self)
         int key = getch();
         erase();
 
-        mvprintw(10, 10, "owo");
+        prog_render_cwd(self);
 
         refresh();
     }
+}
+
+
+void prog_render_cwd(struct Prog* self)
+{
+    int nitems;
+    char** items = fs_list_directory(self->cwd, &nitems);
+
+    for (int i = 0; i < nitems; ++i)
+    {
+        mvprintw(1 + i, 2, "%s", items[i]);
+        free(items[i]);
+    }
+
+    free(items);
 }
 

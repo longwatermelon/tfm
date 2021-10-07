@@ -16,5 +16,7 @@ void prog_free(struct Prog* self);
 
 void prog_mainloop(struct Prog* self);
 
+void prog_render_cwd(struct Prog* self);
+
 #endif
 
