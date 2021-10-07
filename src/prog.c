@@ -22,7 +22,7 @@ struct Prog* prog_alloc(const char* cwd)
 
 void prog_free(struct Prog* self)
 {
-    prog_free_items(self);
+    utils_free_array(self->items, self->nitems);
 
     free(self);
 }
@@ -85,7 +85,7 @@ void prog_change_dir(struct Prog* self, const char* path)
     chdir(path);
     getcwd(self->cwd, sizeof(char) * PATH_MAX);
 
-    prog_free_items(self);
+    utils_free_array(self->items, self->nitems);
 
     self->items = fs_list_directory(self->cwd, &self->nitems);
     self->selected = 0;
@@ -101,14 +101,5 @@ void prog_render_cwd(struct Prog* self)
 
         mvprintw(3 + i, 2, "%s", self->items[i]);
     }
-}
-
-
-void prog_free_items(struct Prog* self)
-{
-    for (int i = 0; i < self->nitems; ++i)
-        free(self->items[i]);
-
-    free(self->items);
 }
 
