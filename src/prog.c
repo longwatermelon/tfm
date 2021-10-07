@@ -11,6 +11,7 @@ struct Prog* prog_alloc(const char* cwd)
     self->running = true;
 
     prog_change_dir(self, cwd);
+    self->selected = 0;
 
     return self;
 }
@@ -37,6 +38,22 @@ void prog_mainloop(struct Prog* self)
         if (key == 'q')
             self->running = false;
 
+        if (key == KEY_UP || key == 'k')
+        {
+            --self->selected;
+
+            if (self->selected < 0)
+                self->selected = 0;
+        }
+
+        if (key == KEY_DOWN || key == 'j')
+        {
+            ++self->selected;
+
+            if (self->selected >= self->nitems)
+                self->selected = self->nitems - 1;
+        }
+
         mvprintw(20, 2, "%s", self->cwd);
         prog_render_cwd(self);
 
@@ -54,6 +71,7 @@ void prog_change_dir(struct Prog* self, const char* path)
     free(full_path);
 
     self->items = fs_list_directory(self->cwd, &self->nitems);
+    self->selected = 0;
 }
 
 
@@ -61,6 +79,9 @@ void prog_render_cwd(struct Prog* self)
 {
     for (int i = 0; i < self->nitems; ++i)
     {
+        if (self->selected == i)
+            mvaddch(1 + i, 0, '>');
+
         mvprintw(1 + i, 2, "%s", self->items[i]);
     }
 }

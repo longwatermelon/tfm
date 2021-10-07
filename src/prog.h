@@ -12,6 +12,8 @@ struct Prog
     
     char** items;
     int nitems;
+
+    int selected;
 };
 
 struct Prog* prog_alloc(const char* cwd);
